@@ -1,4 +1,4 @@
-name: Build Signed APK & AAB
+name: Build Water Sort 1000 APK & AAB
 
 on:
   push:
@@ -31,32 +31,38 @@ jobs:
 
       - name: Configure AdMob App ID in AndroidManifest
         run: |
-          MANIFEST="android/app/src/main/AndroidManifest.xml"
-          sed -i 's/<\/application>/<meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-5317235020851620~3422114455"\/><\/application>/' $MANIFEST
+          python3 -c '
+          path = "android/app/src/main/AndroidManifest.xml"
+          with open(path, "r") as f:
+              content = f.read()
+          meta = """        <meta-data
+              android:name="com.google.android.gms.ads.APPLICATION_ID"
+              android:value="ca-app-pub-5317235020851620~9004631084"/>\n    </application>"""
+          content = content.replace("</application>", meta)
+          with open(path, "w") as f:
+              f.write(content)
+          '
 
-      - name: Sync Capacitor & Build Unsigned Release APK + AAB
+      - name: Sync Capacitor & Build Debug APK + Release AAB
         run: |
           npx cap sync android
           cd android
           chmod +x gradlew
-          ./gradlew assembleRelease
+          ./gradlew assembleDebug
           ./gradlew bundleRelease
 
-      - name: Sign APK with V1+V2+V3 (Fixes Something Went Wrong Error)
+      - name: Sign Release AAB for Play Store
         run: |
           keytool -genkey -v -keystore release.keystore -alias watersort -keyalg RSA -keysize 2048 -validity 10000 -storepass water123 -keypass water123 -dname "CN=WaterSort, OU=Dev, O=Studio, L=City, S=State, C=IN"
-          BUILD_TOOLS=$(ls -d $ANDROID_HOME/build-tools/* | tail -n 1)
-          $BUILD_TOOLS/zipalign -v -p 4 android/app/build/outputs/apk/release/app-release-unsigned.apk app-aligned.apk
-          $BUILD_TOOLS/apksigner sign --ks release.keystore --ks-key-alias watersort --ks-pass pass:water123 --key-pass pass:water123 --out Water-Sort-1000-Signed.apk app-aligned.apk
           jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore release.keystore -storepass water123 -keypass water123 android/app/build/outputs/bundle/release/app-release.aab watersort
 
-      - name: Upload Signed APK (Install on Phone)
+      - name: Upload Phone-Installable APK
         uses: actions/upload-artifact@v4
         with:
-          name: Water-Sort-1000-Signed-APK
-          path: Water-Sort-1000-Signed.apk
+          name: Water-Sort-1000-Phone-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
 
-      - name: Upload Signed AAB (For Play Store)
+      - name: Upload Play Store AAB
         uses: actions/upload-artifact@v4
         with:
           name: Water-Sort-1000-PlayStore-AAB
