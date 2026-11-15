@@ -29,21 +29,13 @@ jobs:
           npm install --legacy-peer-deps
           npx cap add android
 
-      - name: Configure AdMob App ID in AndroidManifest
+      - name: Add AdMob App ID to AndroidManifest
         run: |
-          python3 -c '
-          path = "android/app/src/main/AndroidManifest.xml"
-          with open(path, "r") as f:
-              content = f.read()
-          meta = """        <meta-data
-              android:name="com.google.android.gms.ads.APPLICATION_ID"
-              android:value="ca-app-pub-5317235020851620~9004631084"/>\n    </application>"""
-          content = content.replace("</application>", meta)
-          with open(path, "w") as f:
-              f.write(content)
-          '
+          MANIFEST="android/app/src/main/AndroidManifest.xml"
+          awk '/<\/application>/ { print "        <meta-data android:name=\"com.google.android.gms.ads.APPLICATION_ID\" android:value=\"ca-app-pub-5317235020851620~9004631084\"/>" } { print }' $MANIFEST > tmp_manifest.xml
+          mv tmp_manifest.xml $MANIFEST
 
-      - name: Sync Capacitor & Build Debug APK + Release AAB
+      - name: Sync Capacitor & Build APK + AAB
         run: |
           npx cap sync android
           cd android
