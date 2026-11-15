@@ -24,6 +24,11 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Ensure www folder and index.html exist
+        run: |
+          mkdir -p www
+          if [ -f "index.html" ]; then mv index.html www/index.html; fi
+
       - name: Install dependencies & Add Android
         run: |
           npm install
@@ -32,7 +37,7 @@ jobs:
       - name: Configure AdMob App ID in AndroidManifest
         run: |
           MANIFEST="android/app/src/main/AndroidManifest.xml"
-          sed -i 's/<\/application>/<meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-5317235020851620~YOUR_APP_ID"ca-app-pub-5317235020851620~9004631084\/><\/application>/' $MANIFEST
+          sed -i 's/<\/application>/<meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-5317235020851620~3422114455"\/><\/application>/' $MANIFEST
 
       - name: Generate Signing Keystore & Configure Gradle
         run: |
