@@ -24,14 +24,33 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Ensure www folder and index.html exist
+      - name: Prepare Project Files & Dependencies
         run: |
           mkdir -p www
           if [ -f "index.html" ]; then mv index.html www/index.html; fi
+          
+          cat << 'EOF' > package.json
+          {
+            "name": "water-sort-1000",
+            "version": "1.0.0",
+            "dependencies": {
+              "@capacitor/android": "6.1.2",
+              "@capacitor/cli": "6.1.2",
+              "@capacitor/core": "6.1.2",
+              "@capacitor-community/admob": "6.0.0"
+            }
+          }
+          EOF
 
-      - name: Install dependencies & Add Android
-        run: |
-          npm install
+          cat << 'EOF' > capacitor.config.json
+          {
+            "appId": "com.studio.watersort1000",
+            "appName": "Water Sort 1000",
+            "webDir": "www"
+          }
+          EOF
+
+          npm install --legacy-peer-deps
           npx cap add android
 
       - name: Configure AdMob App ID in AndroidManifest
