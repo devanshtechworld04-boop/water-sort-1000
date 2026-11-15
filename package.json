@@ -1,0 +1,12 @@
+{
+  "name": "water-sort-1000",
+  "version": "1.0.0",
+  "description": "1000 Levels Offline Water Sort Puzzle",
+  "main": "index.js",
+  "dependencies": {
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/cli": "^6.0.0",
+    "@capacitor/core": "^6.0.0",
+    "@capacitor-community/admob": "^6.0.0"
+  }
+}
