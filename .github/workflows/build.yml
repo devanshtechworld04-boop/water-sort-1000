@@ -24,32 +24,8 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Prepare Project Files & Dependencies
+      - name: Install dependencies & Add Android
         run: |
-          mkdir -p www
-          if [ -f "index.html" ]; then mv index.html www/index.html; fi
-          
-          cat << 'EOF' > package.json
-          {
-            "name": "water-sort-1000",
-            "version": "1.0.0",
-            "dependencies": {
-              "@capacitor/android": "6.1.2",
-              "@capacitor/cli": "6.1.2",
-              "@capacitor/core": "6.1.2",
-              "@capacitor-community/admob": "6.0.0"
-            }
-          }
-          EOF
-
-          cat << 'EOF' > capacitor.config.json
-          {
-            "appId": "com.studio.watersort1000",
-            "appName": "Water Sort 1000",
-            "webDir": "www"
-          }
-          EOF
-
           npm install --legacy-peer-deps
           npx cap add android
 
@@ -61,24 +37,7 @@ jobs:
       - name: Generate Signing Keystore & Configure Gradle
         run: |
           keytool -genkey -v -keystore android/app/release.keystore -alias watersort -keyalg RSA -keysize 2048 -validity 10000 -storepass water123 -keypass water123 -dname "CN=WaterSort, OU=Dev, O=Studio, L=City, S=State, C=IN"
-          cat << 'EOF' >> android/app/build.gradle
-          android {
-              signingConfigs {
-                  release {
-                      storeFile file("release.keystore")
-                      storePassword "water123"
-                      keyAlias "watersort"
-                      keyPassword "water123"
-                  }
-              }
-              buildTypes {
-                  release {
-                      signingConfig signingConfigs.release
-                      minifyEnabled false
-                  }
-              }
-          }
-          EOF
+          printf '\nandroid {\n  signingConfigs {\n    release {\n      storeFile file("release.keystore")\n      storePassword "water123"\n      keyAlias "watersort"\n      keyPassword "water123"\n    }\n  }\n  buildTypes {\n    release {\n      signingConfig signingConfigs.release\n      minifyEnabled false\n    }\n  }\n}\n' >> android/app/build.gradle
 
       - name: Sync Capacitor & Build APK + AAB
         run: |
@@ -88,13 +47,13 @@ jobs:
           ./gradlew assembleRelease
           ./gradlew bundleRelease
 
-      - name: Upload Release APK (Install Directly on Phone)
+      - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
           name: Water-Sort-1000-Release-APK
           path: android/app/build/outputs/apk/release/app-release.apk
 
-      - name: Upload Release AAB (For Play Store)
+      - name: Upload Release AAB
         uses: actions/upload-artifact@v4
         with:
           name: Water-Sort-1000-PlayStore-AAB
